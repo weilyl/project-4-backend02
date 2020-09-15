@@ -29,6 +29,10 @@ SECRET_KEY = 'hzxf45!3@@-!#tw2kae+*peb^6^n7&9t)jlt!ppvrurpmw)t(a'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+env = environ.Env()
+# reading .env file
+environ.Env.read_env()
+
 ALLOWED_HOSTS = []
 
 
