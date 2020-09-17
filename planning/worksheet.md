@@ -123,6 +123,10 @@ Link Model
 
 **RESOLUTION**: 
 
+**ERROR**: API urls not showing up in Django Admin.
+
+**RESOLUTION**: 
+
 
 
 **ERROR**: After registering models in admin.py to test API views & routes in Django Admin:
