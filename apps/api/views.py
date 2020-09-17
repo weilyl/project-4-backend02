@@ -11,6 +11,8 @@ from apps.api.models import Link, List, Tag, Review
 from apps.api.serializer import LinkSerializer, ListSerializer, TagSerializer, ReviewSerializer
 
 
+# Get all lists, create lists, delete lists; how to use perform_destroy to ask before deleting?
+# Only specific user can do this
 class ListViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = ListSerializer
@@ -50,6 +52,8 @@ class ListViewSet(viewsets.ModelViewSet):
         )
 
 
+# Get all links in a specific list
+# Add links for a specific list?  What does perform create do?
 class ListLinks(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = LinkSerializer
@@ -67,7 +71,11 @@ class ListLinks(generics.ListCreateAPIView):
         serializer.save(owner=self.request.user)
 
 
-    class SingleLinkPerList(generics.RetrieveUpdateDestroyAPIView):
+# Get one link on a specific list
+# post-MVP edit/add/delete tags for a specific link on a specific list
+# How to add/remove links from list without removing links from website:
+# http://www.learningaboutelectronics.com/Articles/How-to-add-or-remove-an-object-ManyToManyField-in-Django.php
+class SingleLinkPerList(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = LinkSerializer
 
@@ -81,7 +89,27 @@ class ListLinks(generics.ListCreateAPIView):
             )
             return queryset
 
+    def remove_link_from_list(self):
+        if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
+            user_list = List.objects.get(pk=self.kwargs['list_pk'])
+            queryset = Link.objects.filter(
+                pk=self.kwargs['pk'],
+                owner=self.request.user,
+                list=user_list
+            )
+            user_list.links.remove(queryset)
+            return user_list.links.all()
 
+    def add_link_to_list(self):
+        if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
+            user_list = List.objects.get(pk=self.kwargs['list_pk'])
+            user_link = Link.objects.get(pk=self.kwargs['pk'])
+            user_list.links.add(user_link)
+            return user_list.links.all()
+
+
+# Get all links saved by a specific user
+# should I change 'is_saved' property for a link when it's created and/or added to a list?
 class LinksViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = LinkSerializer
@@ -90,4 +118,6 @@ class LinksViewSet(viewsets.ModelViewSet):
         queryset = Link.objects.all().filter(
             user_list=List.objects.filter(owner=self.request.user)
         )
+        # list.links.added.all
+        # set attribute added on link model to find all lists a link has be added to
         return queryset
