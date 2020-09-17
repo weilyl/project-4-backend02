@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'authentication.apps.AuthenticationConfig',
+    'apps.api'
 ]
 
 MIDDLEWARE = [
@@ -129,7 +130,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'authentication.user'
+AUTH_USER_MODEL = 'authentication.User'
+
 # Django rest framework authentication
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
@@ -146,7 +148,8 @@ REST_FRAMEWORK = {
 }
 
 # Overriding DRF JWT settings
-JWT_AUTH = {    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=5184000),    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=60),}
+JWT_AUTH = {'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=5184000),
+            'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=60)}
 
 
 # Internationalization
