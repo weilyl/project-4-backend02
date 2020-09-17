@@ -125,6 +125,25 @@ Link Model
 
 
 
+**ERROR**: After registering models in admin.py to test API views & routes in Django Admin:
+
+```    raise RuntimeError(
+RuntimeError: Model class apps.api.models.Tag doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.
+```
+
+**RESOLUTION**: Tried to unregister unused (post-MVP) models, but same error occurred. 
+Tried to follow [this](https://stackoverflow.com/questions/55553252/runtimeerror-model-class-xxx-doesnt-declare-an-explicit-app-label-and-isnt-in) and use absolute import rather than relative import, but same error occurred.
+Tried to be more explicit in settings.py > INSTALLED_APPS by using `'apps.api.apps.APIConfig'` and `'apps.api.apps' instead of `'apps.api'`.
+Further down in above link, suggestions are to add class Meta & app_label attribute but the following error occurred:
+
+```
+raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Cannot import 'api'. Check that 'apps.api.apps.APIConfig.name' is correct.
+```
+
+Note: `apps.api` in INSTALLED_APPS did not raise any errors in previous migrations. 
+Final Resolution: Returned to using `'apps.api'` in INSTALLED_APPS.
+
 **ERROR**: 2020-09-16 When attempting to make migrations after fixing below errors: 
 
 ```

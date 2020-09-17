@@ -5,6 +5,8 @@ from django.db import models
 
 
 class Tag(models.Model):
+    class Meta:
+        app_label = 'api'
     name = models.CharField(max_length=50)
 
     def __str__(self):
@@ -16,7 +18,7 @@ class Link(models.Model):
     name = models.CharField(max_length=500)
     description = models.TextField(blank=True)
     image = models.URLField(null=True)
-    tags = models.ManyToManyField(Tag, blank=True)
+    # tags = models.ManyToManyField(Tag, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_public = models.BooleanField(default=True)
@@ -33,14 +35,14 @@ class List(models.Model):
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    links = models.ManyToManyField(Link, related_name='added', on_delete=models.DO_NOTHING)
+    links = models.ManyToManyField(Link, related_name='added', blank=True)
 
     def __str__(self):
         return self.name
 
 
 class Review(models.Model):
-    [title] = models.CharField(max_length=250)
+    title = models.CharField(max_length=250)
     notes = models.TextField(max_length=1000)
     difficulty = models.IntegerField(null=True)
 
