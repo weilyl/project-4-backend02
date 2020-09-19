@@ -119,13 +119,37 @@ Link Model
 ## Issues and Resolutions
 
 
-**ERROR**: 
+**ERROR**: get_queryset method in SingleLinkPerList viewset successfully returns the intended list and link, but they are not related. Potentially need to call `add_link_to_list()` first.
 
 **RESOLUTION**: 
+
+
+**ERROR**: In editing the get_queryset method for the SingleLinkPerList viewset, one attempt to define the foreign key value for the property links in the list yielded this error:
+
+```
+    raise ValueError(
+ValueError: The QuerySet value for an exact lookup must be limited to one result using slicing.
+
+```
+
+**RESOLUTION**: Removed the "links=" search parameter from the SQL query for a specific list & changed .get() to .filter() in the same query.
+
+
+**ERROR**: Attempting Postman GET request on `http://127.0.0.1:8000/auth/api/lists/1/links/1`:
+
+```
+raise FieldError("Cannot resolve keyword '%s' into field. "
+django.core.exceptions.FieldError: Cannot resolve keyword 'list' into field. Choices are: added, created_at, description, favorited, id, i
+mage, is_favorite, is_public, is_saved, name, saved, updated_at
+
+```
+
+**RESOLUTION**: SingleLinkPerList viewset was referencing the property 'list' that had been removed from the models & fields of the Link class.
+
 
 **ERROR**: API urls not showing up in Django Admin.
 
-**RESOLUTION**: 
+**RESOLUTION**: `path('api/', include('apps.api.urls'))` was added to `authentication/urls.py`
 
 
 

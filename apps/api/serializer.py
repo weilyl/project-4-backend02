@@ -20,19 +20,19 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class LinkSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
+    # owner = serializers.ReadOnlyField(source='owner.username')
 
     class Meta:
         model = Link
-        fields = ('id', 'list', 'name', 'description', 'image', 'created_at', 'updated_at',
-                  'is_public', 'is_favorite', 'is_saved', 'tags')
+        fields = ('id', 'name', 'description', 'image', 'created_at', 'updated_at',
+                  'is_public', 'is_favorite', 'is_saved')
 
 
 class ListSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
-    links = LinkSerializer(many=True, read_only=True, required=False)
+    # links = LinkSerializer(many=True, read_only=True, required=False)
 
     class Meta:
         model = List
-        fields = ('id', 'name', 'owner', 'description', 'created_at', 'updated_at')
+        fields = ('id', 'name', 'owner', 'description', 'created_at', 'updated_at', 'links')
 

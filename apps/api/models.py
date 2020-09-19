@@ -14,7 +14,7 @@ class Tag(models.Model):
 
 
 class Link(models.Model):
-    # list = models.ManyToManyField(List, related_name='lists', on_delete=models.DO_NOTHING)
+    # list = models.ManyToManyField(List, related_name='listed', blank=True)
     name = models.CharField(max_length=500)
     description = models.TextField(blank=True)
     image = models.URLField(null=True)

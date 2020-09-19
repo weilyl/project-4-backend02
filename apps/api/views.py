@@ -51,6 +51,16 @@ class ListViewSet(viewsets.ModelViewSet):
             }
         )
 
+    def update(self, request, *args, **kwargs):
+        user_list = List.objects.get(pk=self.kwargs["pk"])
+        if not request.user == user_list.owner:
+            raise PermissionDenied(
+                "You have no permissions to edit this recipe"
+            )
+        else:
+            user_list.update(self.kwargs)
+        return super().update(request, *args, **kwargs)
+
 
 # Get all links in a specific list
 # Add links for a specific list?  What does perform create do?
@@ -60,7 +70,7 @@ class ListLinks(generics.ListCreateAPIView):
 
     def get_queryset(self):
         if self.kwargs.get('list_pk'):
-            user_list = List.objects.get(pk=self.kwargs['list_pk'])
+            user_list = List.objects.filter(pk=self.kwargs['list_pk'])
             queryset = Link.objects.filter(
                 owner=self.request.user,
                 list=user_list,
@@ -81,43 +91,71 @@ class SingleLinkPerList(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
-            user_list = List.objects.get(pk=self.kwargs['list_pk'])
             queryset = Link.objects.filter(
                 pk=self.kwargs['pk'],
-                owner=self.request.user,
-                list=user_list
             )
-            return queryset
-
-    def remove_link_from_list(self):
-        if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
-            user_list = List.objects.get(pk=self.kwargs['list_pk'])
-            queryset = Link.objects.filter(
-                pk=self.kwargs['pk'],
+            user_list = List.objects.filter(
+                pk=self.kwargs['list_pk'],
                 owner=self.request.user,
-                list=user_list
             )
-            user_list.links.remove(queryset)
-            return user_list.links.all()
+            return user_list
 
-    def add_link_to_list(self):
-        if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
-            user_list = List.objects.get(pk=self.kwargs['list_pk'])
-            user_link = Link.objects.get(pk=self.kwargs['pk'])
-            user_list.links.add(user_link)
-            return user_list.links.all()
+# class RemoveLinkFromListView(generics.RetrieveUpdateDestroyAPIView):
+#     permission_classes = (IsAuthenticated,)
+#     serializer_class = LinkSerializer
+
+    def destroy(self):
+        if self.request.method == 'DELETE':
+            if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
+                user_list = List.objects.filter(pk=self.kwargs['list_pk'])
+                queryset = Link.objects.filter(
+                    pk=self.kwargs['pk'],
+                    owner=self.request.user,
+                    list=user_list
+                )
+                user_list.links.remove(queryset)
+                return user_list.links.all()
+            else:
+                raise ValidationError(
+                    "Link could not be removed"
+                )
+
+# class AddLinkToListView(generics.RetrieveUpdateDestroyAPIView):
+#     permission_classes = (IsAuthenticated,)
+#     serializer_class = LinkSerializer
+
+    def create(self):
+        if self.request.method == 'PUT':
+            if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
+                user_list = List.objects.filter(pk=self.kwargs['list_pk'])
+                user_link = Link.objects.filter(pk=self.kwargs['pk'])
+                user_list.links.add(user_link)
+                return user_link
+            else:
+                raise ValidationError(
+                    "Link could not be added"
+                )
 
 
 # Get all links saved by a specific user
 # should I change 'is_saved' property for a link when it's created and/or added to a list?
 class LinksViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    serializer_class = LinkSerializer
+    serializer_class = ListSerializer
 
     def get_queryset(self):
-        queryset = Link.objects.all().filter(
-            user_list=List.objects.filter(owner=self.request.user)
-        )
+        # queryset = Link.objects.all().filter(
+        #     user_list=List.objects.filter(owner=self.request.user)
+        # )
         # list.links.added.all
         # set attribute added on link model to find all lists a link has be added to
-        return queryset
+        queryset = List.objects.filter(owner=self.request.user)
+        all_links = []
+        for user_list in queryset:
+            user_links = user_list.links.all()
+            for user_link in user_links:
+                if user_link in all_links:
+                    pass
+                else:
+                    all_links.append(user_links)
+        return all_links
