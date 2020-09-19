@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics  # contains filters so spec categories belong to spec users
 from rest_framework import viewsets
+from django.views.generic import View
+
 from rest_framework.exceptions import (
     ValidationError, PermissionDenied
 )
@@ -17,12 +19,14 @@ class ListViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = ListSerializer
 
+    # returns all links created by user
     def get_queryset(self):
         queryset = List.objects.all().filter(
             owner=self.request.user
         )
         return queryset
 
+    # create new list
     def create(self, request, *args, **kwargs):
         user_list = List.objects.filter(
             name=request.data.get('name'),
@@ -39,6 +43,7 @@ class ListViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         pass
 
+    # delete list if owned by user
     def destroy(self, request, *args, **kwargs):
         user_list = List.objects.get(pk=self.kwargs['pk'])
         if not request.user == user_list.owner:
@@ -51,6 +56,7 @@ class ListViewSet(viewsets.ModelViewSet):
             }
         )
 
+    # edit existing list if owned by user
     def update(self, request, *args, **kwargs):
         user_list = List.objects.get(pk=self.kwargs["pk"])
         if not request.user == user_list.owner:
@@ -68,14 +74,19 @@ class ListLinks(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = LinkSerializer
 
+    # get all links from list
+    # NEED TO TEST AGAIN once method to add link to list is working
     def get_queryset(self):
         if self.kwargs.get('list_pk'):
-            user_list = List.objects.filter(pk=self.kwargs['list_pk'])
-            queryset = Link.objects.filter(
-                owner=self.request.user,
-                list=user_list,
-            )
-            return queryset
+            user_list = List.objects.get(pk=self.kwargs['list_pk'])
+            # queryset = Link.objects.filter(
+            #     owner=self.request.user,
+            # )
+            user_links = []
+            for link_id in user_list.links.all():
+                user_link_singular = Link.objects.get(pk=link_id)
+                user_links.append(user_link_singular)
+            return user_links
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -89,6 +100,7 @@ class SingleLinkPerList(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = LinkSerializer
 
+    # NEED TO FIX to get one link from one list; may not need for MVP?
     def get_queryset(self):
         if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
             queryset = Link.objects.filter(
@@ -100,37 +112,51 @@ class SingleLinkPerList(generics.RetrieveUpdateDestroyAPIView):
             )
             return user_list
 
-# class RemoveLinkFromListView(generics.RetrieveUpdateDestroyAPIView):
-#     permission_classes = (IsAuthenticated,)
-#     serializer_class = LinkSerializer
 
-    def destroy(self):
+class RemoveLinkFromListView(View):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = LinkSerializer
+
+    # take one link from list without deleting from database; remove relation between link and list
+    # NEED TO FIX
+    # NEED TO TEST AFTER MAKING CREATE COUNTERPART
+    # maybe I can take this destroy & its create counterpart out of class & make custom routes so I don't need request methods??
+    def get(self):
         if self.request.method == 'DELETE':
             if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
                 user_list = List.objects.filter(pk=self.kwargs['list_pk'])
                 queryset = Link.objects.filter(
                     pk=self.kwargs['pk'],
-                    owner=self.request.user,
-                    list=user_list
+                    # owner=self.request.user,
+                    # list=user_list
                 )
                 user_list.links.remove(queryset)
+                user_list.save()
+                # https://books.agiliq.com/projects/django-orm-cookbook/en/latest/many_to_many.html
+                # even though other resources says .save() is not necessary for m2m
                 return user_list.links.all()
             else:
                 raise ValidationError(
                     "Link could not be removed"
                 )
 
-# class AddLinkToListView(generics.RetrieveUpdateDestroyAPIView):
-#     permission_classes = (IsAuthenticated,)
-#     serializer_class = LinkSerializer
 
-    def create(self):
+class AddLinkToListView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = LinkSerializer
+
+    # NEED TO FIX
+    # add link to list; add relation to many to many field 'links' in list object
+    def get(self):
+        serializer_class = ListSerializer
         if self.request.method == 'PUT':
             if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
                 user_list = List.objects.filter(pk=self.kwargs['list_pk'])
-                user_link = Link.objects.filter(pk=self.kwargs['pk'])
-                user_list.links.add(user_link)
-                return user_link
+                user_list.links.append('pk')
+                # user_link = Link.objects.filter(pk=self.kwargs['pk'])
+                # user_list.links.add(user_link)
+                user_list.save()
+                return user_list
             else:
                 raise ValidationError(
                     "Link could not be added"
@@ -141,7 +167,7 @@ class SingleLinkPerList(generics.RetrieveUpdateDestroyAPIView):
 # should I change 'is_saved' property for a link when it's created and/or added to a list?
 class LinksViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    serializer_class = ListSerializer
+    serializer_class = LinkSerializer
 
     def get_queryset(self):
         # queryset = Link.objects.all().filter(
@@ -152,10 +178,18 @@ class LinksViewSet(viewsets.ModelViewSet):
         queryset = List.objects.filter(owner=self.request.user)
         all_links = []
         for user_list in queryset:
+            print(user_list)
             user_links = user_list.links.all()
+            print(user_links)
             for user_link in user_links:
+                print(user_link)
                 if user_link in all_links:
                     pass
                 else:
-                    all_links.append(user_links)
+                    print(all_links)
+                    return user_link
+                print(all_links)
+                all_links.append(user_link)
+        print(all_links)
+        # 2020-09-18 11:40pm: prints have shown that both lists are named Scarves02 & do not have related lists
         return all_links

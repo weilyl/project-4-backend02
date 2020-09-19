@@ -119,6 +119,36 @@ Link Model
 ## Issues and Resolutions
 
 
+**ERROR**:
+
+**RESOLUTION**: 
+
+
+**ERROR**:
+
+**RESOLUTION**: 
+
+
+**ERROR**: 2020-09-18 ` return serializer_class(*args, **kwargs) 
+TypeError: 'tuple' object is not callable` when trying to iterate through a many to many field.
+
+**RESOLUTION**: Tried to use two serializers and interpreter saw it as a tuple. Removed `ListSerializer` as only links were being returned and only LinkSerializer would be needed
+
+
+**ERROR**: 2020-09-18 `TypeError: 'ManyRelatedManager' object is not iterable` when attempting to resolve ListLinks.get_queryset() to view all links in a list.
+
+**RESOLUTION**: For the code block: 
+```
+ if self.kwargs.get('list_pk'):
+    user_list = List.objects.get(pk=self.kwargs['list_pk'])
+    user_links = []
+    for link_id in user_list.links:
+        user_link_singular = Link.objects.get(pk=link_id)
+        user_links.append(user_link_singular)
+    return user_links
+```
+the snippet `user_list.links` was changed to `user_list.links.all()` to return a QuerySet, which is iterable [source](https://stackoverflow.com/questions/45768190/typeerror-manyrelatedmanager-object-is-not-iterable)
+
 **ERROR**: get_queryset method in SingleLinkPerList viewset successfully returns the intended list and link, but they are not related. Potentially need to call `add_link_to_list()` first.
 
 **RESOLUTION**: 
