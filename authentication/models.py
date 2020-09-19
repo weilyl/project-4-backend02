@@ -2,9 +2,11 @@ from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
-
 # allows us to set the JWT settings
 from rest_framework_jwt.settings import api_settings
+
+from apps.api.models import Link, List
+# import apps.api.models
 
 # setting JWT payload
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -55,6 +57,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=True)  # default True for testing purposes
     created_at = models.DateTimeField(auto_now_add=True)  # when user is first created, get system time & freeze info
     updated_at = models.DateTimeField(auto_now=True)  # get current time
+    favorites = models.ManyToManyField(Link, default=None, blank=True,
+                                       limit_choices_to={'is_favorite': True}, related_name='favorited')
+    saved = models.ManyToManyField(Link, default=None, blank=True,
+                                   limit_choices_to={'is_saved': True}, related_name='saved')
+    image = models.URLField(null=True)
 
     USERNAME_FIELD = 'username'  # doesn't need brackets bc of Base User inheritance so Django checks for it
     REQUIRED_FIELDS = ['email']  # brackets indicate MUST be present; indicates list of info that is required
