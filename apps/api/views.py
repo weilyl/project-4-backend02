@@ -4,6 +4,8 @@ from rest_framework import status
 from rest_framework import generics  # contains filters so spec categories belong to spec users
 from rest_framework import viewsets
 from django.views.generic import View
+from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 
 from rest_framework.exceptions import (
     ValidationError, PermissionDenied
@@ -98,20 +100,29 @@ class ListLinks(generics.ListCreateAPIView):
 # http://www.learningaboutelectronics.com/Articles/How-to-add-or-remove-an-object-ManyToManyField-in-Django.php
 class SingleLinkPerList(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = LinkSerializer
+    serializer_class = ListSerializer
 
     # NEED TO FIX to get one link from one list; may not need for MVP?
+    # def get_queryset(self):
+    #     if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
+    #         queryset = Link.objects.filter(
+    #             pk=self.kwargs['pk'],
+    #         )
+    #         user_list = List.objects.filter(
+    #             pk=self.kwargs['list_pk'],
+    #             owner=self.request.user,
+    #         )
+    #         return user_list
     def get_queryset(self):
         if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
-            queryset = Link.objects.filter(
+            queryset = List.links.through.objects.filter(
                 pk=self.kwargs['pk'],
             )
             user_list = List.objects.filter(
                 pk=self.kwargs['list_pk'],
                 owner=self.request.user,
             )
-            return user_list
-
+            return queryset
 
 class RemoveLinkFromListView(View):
     permission_classes = (IsAuthenticated,)
@@ -122,10 +133,10 @@ class RemoveLinkFromListView(View):
     # NEED TO TEST AFTER MAKING CREATE COUNTERPART
     # maybe I can take this destroy & its create counterpart out of class & make custom routes so I don't need request methods??
     def get(self):
-        if self.request.method == 'DELETE':
+        if self.request.method == 'GET':
             if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
-                user_list = List.objects.filter(pk=self.kwargs['list_pk'])
-                queryset = Link.objects.filter(
+                user_list = List.objects.get(pk=self.kwargs['list_pk'])
+                queryset = Link.objects.get(
                     pk=self.kwargs['pk'],
                     # owner=self.request.user,
                     # list=user_list
@@ -141,26 +152,47 @@ class RemoveLinkFromListView(View):
                 )
 
 
-class AddLinkToListView(generics.RetrieveUpdateDestroyAPIView):
+class AddLinkToListView(View):
     permission_classes = (IsAuthenticated,)
-    serializer_class = LinkSerializer
+    serializer_class = ListSerializer
 
+    @api_view(('GET',))
+    @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
     # NEED TO FIX
     # add link to list; add relation to many to many field 'links' in list object
-    def get(self):
-        serializer_class = ListSerializer
-        if self.request.method == 'PUT':
-            if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
-                user_list = List.objects.filter(pk=self.kwargs['list_pk'])
-                user_list.links.append('pk')
-                # user_link = Link.objects.filter(pk=self.kwargs['pk'])
-                # user_list.links.add(user_link)
-                user_list.save()
-                return user_list
-            else:
-                raise ValidationError(
-                    "Link could not be added"
-                )
+    # def get(self, request, **kwargs):
+    #     # if self.request.method == 'GET':
+    #     print("This is a GET method")
+    #     if self.kwargs.get('list_pk') and self.kwargs.get('pk'):
+    #         user_list = List.objects.get(pk=self.kwargs['list_pk'])
+    #         # user_list.links.append('pk')
+    #         # print(Link(user_list['id']))
+    #         user_link = Link.objects.get(pk=self.kwargs['pk'])
+    #         print(user_link)
+    #         user_list.links.add(user_link.id)
+    #         # user_list.links.append('pk')
+    #         user_list.save()
+    #         print(user_list)
+    #         data = {'count': queryset.count()}
+    #         return Response(data, template_name='assessments.html')
+    #         # return Response(
+    #         #     {
+    #         #         "message": f'{user_list.links}',
+    #         #         "status": status.HTTP_200_OK
+    #         #     }
+    #         # )
+    #     else:
+    #         raise ValidationError(
+    #             "Link could not be added"
+    #         )
+
+    def get_queryset(self):
+        print(request)
+        list_pk = request.list_pk
+        link_pk = request.link_pk
+        user_list = List.objects.get(pk=list_pk)
+        user_link = Link.objects.get(pk=link_pk)
+
 
 
 # Get all links saved by a specific user

@@ -26,6 +26,8 @@ class LinkSerializer(serializers.ModelSerializer):
         model = Link
         fields = ('id', 'name', 'description', 'image', 'created_at', 'updated_at',
                   'is_public', 'is_favorite', 'is_saved')
+        extra_kwargs = {'lists': {'required': False}}
+
 
 
 class ListSerializer(serializers.ModelSerializer):
