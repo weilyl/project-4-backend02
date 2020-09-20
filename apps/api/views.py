@@ -12,7 +12,7 @@ from rest_framework.exceptions import (
 )
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from apps.api.models import Link, List, Tag, Review
-from apps.api.serializer import LinkSerializer, ListSerializer, TagSerializer, ReviewSerializer
+from apps.api.serializer import LinkSerializer, ListSerializer, TagSerializer, ReviewSerializer, ListLinksSerializer
 
 
 # Get all lists, create lists, delete lists; how to use perform_destroy to ask before deleting?

@@ -35,10 +35,15 @@ class List(models.Model):
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    links = models.ManyToManyField(Link, related_name='added', blank=True)
+    links = models.ManyToManyField(Link, related_name='links', blank=True)
 
     def __str__(self):
         return self.name
+
+
+class ListLinks(models.Model):
+    list_id = models.IntegerField
+    link_id = models.IntegerField(blank=True)
 
 
 class Review(models.Model):
