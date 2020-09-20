@@ -201,7 +201,6 @@ class AddLinkToListView(viewsets.ModelViewSet):
         print(user_link)
         # user_list.links.append(user_link.id)
         # tied = ListLinks(list_id=user_list, link_id=user_link)
-        # tied = Membership.objects.create(list_id=user_list, link_id=user_link)
         tied = Membership.objects.create(list_id=user_list, link_id=user_link)
         print(tied)
         tied.save()

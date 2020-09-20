@@ -118,13 +118,28 @@ Link Model
 
 ## Issues and Resolutions
 
+**ERROR**: 
 
-**ERROR**:
+**RESOLUTION**:
 
-**RESOLUTION**: 
 
-`AttributeError: 'ListLinks' object has no attribute 'save'
-`
+**ERROR**: `'links'` property of 'list' model does not show up in Postman.
+
+**RESOLUTION**: Removed "source" from `link_id = LinkSerializer(many=True, required=False, read_only=True)`
+
+
+**ERROR**: While still working on view to add a public link to a user-specific list: `AttributeError: 'ListLinks' object has no attribute 'save'`
+
+**RESOLUTION**: Using [this](https://stackoverflow.com/questions/35543695/type-object-x-has-no-attribute-objects) as a reference, updated many-to-many serializer:
+
+```
+class ListLinks(models.Model):
+    list_id = models.ForeignKey(List, on_delete=models.DO_NOTHING, default=None)
+    link_id = models.ForeignKey(Link, on_delete=models.DO_NOTHING, default=None)
+    objects = models.Manager()
+```
+
+and created an object for the data base: `tied = Membership.objects.create(list_id=user_list, link_id=user_link)` that can be saved with `tied.save()`
 
 **ERROR**: When editing get_queryset method to form relation between existing database items:
 `AttributeError: 'ManyRelatedManager' object has no attribute 'append'`
