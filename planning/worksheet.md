@@ -122,6 +122,12 @@ Link Model
 
 **RESOLUTION**:
 
+**ERROR**: When logging in on the frontend:
+
+```
+Access to fetch at 'http://127.0.0.1:8000/auth/api/users/login/' from origin 'http://localhost:8080' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
+```
+**RESOLUTION**:
 
 **ERROR**: `'links'` property of 'list' model does not show up in Postman.
 
@@ -144,7 +150,7 @@ and created an object for the data base: `tied = Membership.objects.create(list_
 **ERROR**: When editing get_queryset method to form relation between existing database items:
 `AttributeError: 'ManyRelatedManager' object has no attribute 'append'`
 
-**RESOLUTION**: Using [this](https://stackoverflow.com/questions/8095813/attributeerror-manyrelatedmanager-object-has-no-attribute-add-i-do-like-in), a 'through' relationship using the many-to-many model was used.
+**RESOLUTION**: Using & [Django docs](https://docs.djangoproject.com/en/3.1/topics/db/managers/) & [this](https://stackoverflow.com/questions/8095813/attributeerror-manyrelatedmanager-object-has-no-attribute-add-i-do-like-in), a 'through' relationship using the many-to-many model was used.
 
 **ERROR**: When trying to obtain a specific link related to a user-specific list (to confirm whether relationship was successfully created or not) using this query (`            queryset = List.links.through.objects.filter(
 ` based on this [link from Suresh](https://www.peterbe.com/plog/efficient-m2m-django-rest-framework), received this error:
