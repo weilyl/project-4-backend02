@@ -31,7 +31,7 @@ class LinkSerializer(serializers.ModelSerializer):
 
 
 class ListLinksSerializer(serializers.ModelSerializer):
-    link_id = LinkSerializer(many=True, required=False)
+    link_id = LinkSerializer(many=True, required=False, read_only=True)
 
     class Meta:
         model = ListLinks
@@ -40,9 +40,9 @@ class ListLinksSerializer(serializers.ModelSerializer):
 
 class ListSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
-    links = ListLinksSerializer(many=True, required=False, source='links.id')
+    links = ListLinksSerializer(many=True, required=False, read_only=True)
 
     class Meta:
         model = List
         fields = ('id', 'name', 'owner', 'description', 'created_at', 'updated_at', 'links')
-        extra_kwargs = {'lists': {'required': False}}
+        # extra_kwargs = {'lists': {'required': False}}

@@ -123,9 +123,13 @@ Link Model
 
 **RESOLUTION**: 
 
-**ERROR**:
+`AttributeError: 'ListLinks' object has no attribute 'save'
+`
 
-**RESOLUTION**: 
+**ERROR**: When editing get_queryset method to form relation between existing database items:
+`AttributeError: 'ManyRelatedManager' object has no attribute 'append'`
+
+**RESOLUTION**: Using [this](https://stackoverflow.com/questions/8095813/attributeerror-manyrelatedmanager-object-has-no-attribute-add-i-do-like-in), a 'through' relationship using the many-to-many model was used.
 
 **ERROR**: When trying to obtain a specific link related to a user-specific list (to confirm whether relationship was successfully created or not) using this query (`            queryset = List.links.through.objects.filter(
 ` based on this [link from Suresh](https://www.peterbe.com/plog/efficient-m2m-django-rest-framework), received this error:
@@ -137,7 +141,7 @@ Original exception text was: 'List_links' object has no attribute 'name'.
 ```
 Conclusion: It could be that Postgres is not properly creating the third table that holds the many-to-many relationship (assuming `List_links` refers to the third table).
 
-**RESOLUTION**: 
+**RESOLUTION**: Reconfigured settings.py with SQLite3 rather than local Postgres database in order to visualize schema.
 
 
 **ERROR**: Changed query methods back to .get() to use dot & bracket notation to access object attributes.

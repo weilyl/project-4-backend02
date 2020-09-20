@@ -12,6 +12,7 @@ from rest_framework.exceptions import (
 )
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from apps.api.models import Link, List, Tag, Review
+from apps.api.models import ListLinks as Membership
 from apps.api.serializer import LinkSerializer, ListSerializer, TagSerializer, ReviewSerializer, ListLinksSerializer
 
 
@@ -74,7 +75,7 @@ class ListViewSet(viewsets.ModelViewSet):
 
 # Get all links in a specific list
 # Add links for a specific list?  What does perform create do?
-class ListLinks(generics.ListCreateAPIView):
+class ListLinksViewSet(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = LinkSerializer
 
@@ -88,7 +89,7 @@ class ListLinks(generics.ListCreateAPIView):
             # )
             user_links = []
             for link_id in user_list.links.all():
-                user_link_singular = Link.objects.get(pk=link_id)
+                user_link_singular = Link.objects.get(pk=link_id['id']).first()
                 user_links.append(user_link_singular)
             return user_links
 
@@ -155,9 +156,9 @@ class RemoveLinkFromListView(View):
                 )
 
 
-class AddLinkToListView(View):
+class AddLinkToListView(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    serializer_class = ListSerializer
+    serializer_class = ListLinksSerializer
 
     # @api_view(('GET',))
     # @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
@@ -188,12 +189,24 @@ class AddLinkToListView(View):
     #         raise ValidationError(
     #             "Link could not be added"
     #         )
-    def get_queryset(self, request):
-        print(request)
-        list_pk = request.list_pk
-        link_pk = request.link_pk
-        user_list = List.objects.get(pk=list_pk)
-        user_link = Link.objects.get(pk=link_pk)
+    def get_queryset(self):
+        print(self.request.user)
+        print(self.kwargs['pk'])
+        print(self.kwargs['list_pk'])
+        pk1 = self.kwargs['list_pk']
+        pk2 = self.kwargs['pk']
+        user_list = List.objects.get(pk=pk1)
+        print(user_list)
+        user_link = Link.objects.get(pk=pk2)
+        print(user_link)
+        # user_list.links.append(user_link.id)
+        # tied = ListLinks(list_id=user_list, link_id=user_link)
+        # tied = Membership.objects.create(list_id=user_list, link_id=user_link)
+        tied = Membership.objects.create(list_id=user_list, link_id=user_link)
+        print(tied)
+        tied.save()
+        # return List.objects.filter(pk=pk1).values()
+        return Membership.objects.values()
 
 
 # Get all links saved by a specific user

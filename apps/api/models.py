@@ -33,9 +33,9 @@ class List(models.Model):
     name = models.CharField(max_length=200)
     owner = models.ForeignKey('authentication.User', on_delete=models.CASCADE)
     description = models.TextField(blank=True)
+    links = models.ManyToManyField(Link, related_name='linked', through='ListLinks', default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    links = models.ManyToManyField(Link, related_name='links', blank=True)
 
     def __str__(self):
         return self.name
@@ -44,6 +44,7 @@ class List(models.Model):
 class ListLinks(models.Model):
     list_id = models.ForeignKey(List, on_delete=models.DO_NOTHING, default=None)
     link_id = models.ForeignKey(Link, on_delete=models.DO_NOTHING, default=None)
+    objects = models.Manager()
 
 
 class Review(models.Model):

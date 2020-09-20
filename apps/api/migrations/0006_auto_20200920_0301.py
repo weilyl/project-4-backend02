@@ -12,12 +12,12 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='listlinks',
+            model_name='ListLinks',
             name='list_id',
             field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.DO_NOTHING, to='api.list'),
         ),
         migrations.AlterField(
-            model_name='listlinks',
+            model_name='ListLinks',
             name='link_id',
             field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.DO_NOTHING, to='api.link'),
         ),
