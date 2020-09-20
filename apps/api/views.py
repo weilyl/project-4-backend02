@@ -60,14 +60,16 @@ class ListViewSet(viewsets.ModelViewSet):
 
     # edit existing list if owned by user
     def update(self, request, *args, **kwargs):
-        user_list = List.objects.get(pk=self.kwargs["pk"])
+        user_list = List.objects.filter(pk=self.kwargs["pk"]).first()
+        print(user_list)
+        print(user_list.owner)
         if not request.user == user_list.owner:
             raise PermissionDenied(
                 "You have no permissions to edit this recipe"
             )
         else:
-            user_list.update(self.kwargs)
-        return super().update(request, *args, **kwargs)
+            List.objects.filter(pk=self.kwargs["pk"]).update()
+        return super().update(request, **kwargs)
 
 
 # Get all links in a specific list
@@ -124,6 +126,7 @@ class SingleLinkPerList(generics.RetrieveUpdateDestroyAPIView):
             )
             return queryset
 
+
 class RemoveLinkFromListView(View):
     permission_classes = (IsAuthenticated,)
     serializer_class = LinkSerializer
@@ -156,8 +159,8 @@ class AddLinkToListView(View):
     permission_classes = (IsAuthenticated,)
     serializer_class = ListSerializer
 
-    @api_view(('GET',))
-    @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+    # @api_view(('GET',))
+    # @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
     # NEED TO FIX
     # add link to list; add relation to many to many field 'links' in list object
     # def get(self, request, **kwargs):
@@ -185,14 +188,12 @@ class AddLinkToListView(View):
     #         raise ValidationError(
     #             "Link could not be added"
     #         )
-
-    def get_queryset(self):
+    def get_queryset(self, request):
         print(request)
         list_pk = request.list_pk
         link_pk = request.link_pk
         user_list = List.objects.get(pk=list_pk)
         user_link = Link.objects.get(pk=link_pk)
-
 
 
 # Get all links saved by a specific user
@@ -201,27 +202,43 @@ class LinksViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = LinkSerializer
 
+    # def get_queryset(self):
+    #     # queryset = Link.objects.all().filter(
+    #     #     user_list=List.objects.filter(owner=self.request.user)
+    #     # )
+    #     # list.links.added.all
+    #     # set attribute added on link model to find all lists a link has be added to
+    #     queryset = List.objects.filter(owner=self.request.user)
+    #     all_links = []
+    #     for user_list in queryset:
+    #         print(user_list)
+    #         user_links = user_list.links.all()
+    #         print(user_links)
+    #         for user_link in user_links:
+    #             print(user_link)
+    #             if user_link in all_links:
+    #                 pass
+    #             else:
+    #                 print(all_links)
+    #                 return user_link
+    #             print(all_links)
+    #             all_links.append(user_link)
+    #     print(all_links)
+    #     # 2020-09-18 11:40pm: prints have shown that both lists are named Scarves02 & do not have related lists
+    #     return all_links
+
+    # return all links in database
     def get_queryset(self):
-        # queryset = Link.objects.all().filter(
-        #     user_list=List.objects.filter(owner=self.request.user)
-        # )
-        # list.links.added.all
-        # set attribute added on link model to find all lists a link has be added to
-        queryset = List.objects.filter(owner=self.request.user)
-        all_links = []
-        for user_list in queryset:
-            print(user_list)
-            user_links = user_list.links.all()
-            print(user_links)
-            for user_link in user_links:
-                print(user_link)
-                if user_link in all_links:
-                    pass
-                else:
-                    print(all_links)
-                    return user_link
-                print(all_links)
-                all_links.append(user_link)
-        print(all_links)
-        # 2020-09-18 11:40pm: prints have shown that both lists are named Scarves02 & do not have related lists
-        return all_links
+        queryset = Link.objects.all()
+        return queryset
+
+    def get(self):
+        user_link = Link.objects.get(pk=self.kwargs['pk'])
+        return user_link
+
+    def create(self, request, *args, **kwargs):
+        if request.user.is_anonymous:
+            raise PermissionDenied(
+                "Please make an account to add a link to our database"
+            )
+        return super().create(request, *args, **kwargs)

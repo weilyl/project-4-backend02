@@ -42,8 +42,8 @@ class List(models.Model):
 
 
 class ListLinks(models.Model):
-    list_id = models.IntegerField
-    link_id = models.IntegerField(blank=True)
+    list_id = models.ForeignKey(List, on_delete=models.DO_NOTHING, default=None)
+    link_id = models.ForeignKey(Link, on_delete=models.DO_NOTHING, default=None)
 
 
 class Review(models.Model):
