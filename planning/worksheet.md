@@ -118,6 +118,144 @@ Link Model
 
 ## Issues and Resolutions
 
+**ERROR**: 
+
+**RESOLUTION**:
+
+**ERROR**: 
+
+**RESOLUTION**:
+
+`Uncaught (in promise) SyntaxError: Unexpected token < in JSON at position 0`
+
+**ERROR**: When logging in on the frontend, Chrome Inspect Element returns this error:
+```
+Access to fetch at 'http://127.0.0.1:8000/auth/api/users/login/' from origin 'http://localhost:8080' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
+```
+**RESOLUTION**: 
+1. `pip install django-cors-header`
+2. `pip freeze > requirements.txt`
+3. settings.py: add `'corsheaders.middleware.CorsMiddleware',` to Middleware
+4. Add the following after Middleware:
+```
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = ['http://localhost:8080'],
+```
+
+**ERROR**: `'links'` property of 'list' model does not show up in Postman.
+
+**RESOLUTION**: Removed "source" from `link_id = LinkSerializer(many=True, required=False, read_only=True)`
+
+
+**ERROR**: While still working on view to add a public link to a user-specific list: `AttributeError: 'ListLinks' object has no attribute 'save'`
+
+**RESOLUTION**: Using [this](https://stackoverflow.com/questions/35543695/type-object-x-has-no-attribute-objects) as a reference, updated many-to-many serializer:
+
+```
+class ListLinks(models.Model):
+    list_id = models.ForeignKey(List, on_delete=models.DO_NOTHING, default=None)
+    link_id = models.ForeignKey(Link, on_delete=models.DO_NOTHING, default=None)
+    objects = models.Manager()
+```
+
+and created an object for the data base: `tied = Membership.objects.create(list_id=user_list, link_id=user_link)` that can be saved with `tied.save()`
+
+**ERROR**: When editing get_queryset method to form relation between existing database items:
+`AttributeError: 'ManyRelatedManager' object has no attribute 'append'`
+
+**RESOLUTION**: Using & [Django docs](https://docs.djangoproject.com/en/3.1/topics/db/managers/) & [this](https://stackoverflow.com/questions/8095813/attributeerror-manyrelatedmanager-object-has-no-attribute-add-i-do-like-in), a 'through' relationship using the many-to-many model was used.
+
+**ERROR**: When trying to obtain a specific link related to a user-specific list (to confirm whether relationship was successfully created or not) using this query (`            queryset = List.links.through.objects.filter(
+` based on this [link from Suresh](https://www.peterbe.com/plog/efficient-m2m-django-rest-framework), received this error:
+
+```
+AttributeError: Got AttributeError when attempting to get a value for field `name` on serializer `ListSerializer`.
+The serializer field might be named incorrectly and not match any attribute or key on the `List_links` instance.
+Original exception text was: 'List_links' object has no attribute 'name'.
+```
+Conclusion: It could be that Postgres is not properly creating the third table that holds the many-to-many relationship (assuming `List_links` refers to the third table).
+
+**RESOLUTION**: Reconfigured settings.py with SQLite3 rather than local Postgres database in order to visualize schema.
+
+
+**ERROR**: Changed query methods back to .get() to use dot & bracket notation to access object attributes.
+
+`AssertionError: .accepted_renderer not set on Response`
+
+
+**RESOLUTION**: Tried [this solution](https://stackoverflow.com/questions/55416471/how-to-resolve-assertionerror-accepted-renderer-not-set-on-response-in-django) adding renderer classes as a class decorator. Got a different error: `AssertionError: The `request` argument must be an instance of `django.http.HttpRequest`, not `apps.api.views.AddLinkToListView`.
+`
+
+
+**ERROR**: `AttributeError: 'dict' object has no attribute 'links'` after successfully returning a single object from a query, even though the "links" attribute is set as a many-to-many field in the List model.
+
+**RESOLUTION**: Tried to print `'id'` instead of `'links'` and also ran into an AttributeError even though every object has an id (and id is clearly visible when the object result of the query is printed).
+
+
+
+
+**ERROR**: `.get` queries were only returning names. 
+
+**RESOLUTION**: Ebony told me `.get` would only return names and I needed to return a queryset. This meant I needed to find a way around the Attribute Error I kept running into whenever my queries returned a QuerySet. Using [this](https://stackoverflow.com/questions/14456503/how-to-get-a-particular-attribute-from-queryset-in-django-in-view), changed `.get` back to `.filter` and added `.values`. 
+Additionally, I read these sources ([1](https://docs.djangoproject.com/en/dev/ref/models/querysets/
+), [2](https://stackoverflow.com/questions/37205793/django-values-list-vs-values), [3](https://djangobook.com/mdj2-advanced-models/), [4](https://amittbhardwj.wordpress.com/2015/10/26/django-queryset-values/)), and added `.first()` to get the first dictionary out of the queryset list.
+
+
+**ERROR**: 2020-09-19 After below error fixes, the print statements printed in the terminal for the first time. However, this error was also shown instead of returning the user-specific list:
+
+```
+Traceback (most recent call last):
+  File "/mnt/c/Users/weily/Documents/seir-6-29/student/unit04/project04/p04backend/p04env/lib/python3.8/site-packages/django/core/handlers/exception.py"
+, line 47, in inner
+    response = get_response(request)
+  File "/mnt/c/Users/weily/Documents/seir-6-29/student/unit04/project04/p04backend/p04env/lib/python3.8/site-packages/django/core/handlers/base.py", lin
+e 179, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/mnt/c/Users/weily/Documents/seir-6-29/student/unit04/project04/p04backend/p04env/lib/python3.8/site-packages/django/views/decorators/csrf.py",
+line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/mnt/c/Users/weily/Documents/seir-6-29/student/unit04/project04/p04backend/p04env/lib/python3.8/site-packages/django/views/generic/base.py", lin
+e 70, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/mnt/c/Users/weily/Documents/seir-6-29/student/unit04/project04/p04backend/p04env/lib/python3.8/site-packages/rest_framework/views.py", line 507
+, in dispatch
+    self.response = self.finalize_response(request, response, *args, **kwargs)
+  File "/mnt/c/Users/weily/Documents/seir-6-29/student/unit04/project04/p04backend/p04env/lib/python3.8/site-packages/rest_framework/views.py", line 419
+, in finalize_response
+    assert isinstance(response, HttpResponseBase), (
+AssertionError: Expected a `Response`, `HttpResponse` or `HttpStreamingResponse` to be returned from the view, but received a `<class 'apps.api.models.L
+ist'>`
+[19/Sep/2020 21:17:49] "GET /auth/api/add-to-list/2/1 HTTP/1.1" 500 79576
+```
+
+
+**RESOLUTION**: Instead of returning the variable for a user-specific list, returned a `Response({})` with a message and status. However, the message indicates that the link was not successfully added to the user-specific list.
+
+
+**ERROR**: 2020-09-19 `TypeError: get() got an unexpected keyword argument 'list_pk'` when testing new route `http://127.0.0.1:8000/auth/api/lists/2/add/1` to add relation between link and user-specific list (route confirmed using `django-extensions` command: `python manage.py show_urls`. Hat tip to Jendri)
+
+**RESOLUTION**: According to [this](https://stackoverflow.com/questions/30243865/django-get-got-an-unexpected-keyword-argument-pk-error), the error is in my view method arguments. I additionally thought I might need to adjust the regex in my url, so I followed [this](https://simpleisbetterthancomplex.com/references/2016/10/10/url-patterns.html) and changed the URL to `http://127.0.0.1:8000/auth/api/add-to-list/2/1` so that the keyword arguments would be adjacent and hopefully be captured as a dictionary.
+
+**ERROR**: 2020-09-18 ` return serializer_class(*args, **kwargs) 
+TypeError: 'tuple' object is not callable` when trying to iterate through a many to many field.
+
+**RESOLUTION**: Tried to use two serializers and interpreter saw it as a tuple. Removed `ListSerializer` as only links were being returned and only LinkSerializer would be needed
+
+
+**ERROR**: 2020-09-18 `TypeError: 'ManyRelatedManager' object is not iterable` when attempting to resolve ListLinks.get_queryset() to view all links in a list.
+
+**RESOLUTION**: For the code block: 
+```
+ if self.kwargs.get('list_pk'):
+    user_list = List.objects.get(pk=self.kwargs['list_pk'])
+    user_links = []
+    for link_id in user_list.links:
+        user_link_singular = Link.objects.get(pk=link_id)
+        user_links.append(user_link_singular)
+    return user_links
+```
+the snippet `user_list.links` was changed to `user_list.links.all()` to return a QuerySet, which is iterable [source](https://stackoverflow.com/questions/45768190/typeerror-manyrelatedmanager-object-is-not-iterable)
 
 **ERROR**: get_queryset method in SingleLinkPerList viewset successfully returns the intended list and link, but they are not related. Potentially need to call `add_link_to_list()` first.
 

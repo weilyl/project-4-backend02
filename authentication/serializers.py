@@ -60,6 +60,7 @@ class LoginSerializer(serializers.ModelSerializer):
             )
 
         return {
+            'id': user.pk,
             "username": user.username,
             "email": user.email,
             "token": user.token
