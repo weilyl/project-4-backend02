@@ -66,7 +66,7 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = ['http://localhost:8080'],
+CORS_ORIGIN_WHITELIST = ['http://localhost:8080', 'https://goodhooks.herokuapp.com/'],
 
 ROOT_URLCONF = 'p04backend.urls'
 
