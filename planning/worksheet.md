@@ -122,12 +122,26 @@ Link Model
 
 **RESOLUTION**:
 
-**ERROR**: When logging in on the frontend:
+**ERROR**: 
 
+**RESOLUTION**:
+
+`Uncaught (in promise) SyntaxError: Unexpected token < in JSON at position 0`
+
+**ERROR**: When logging in on the frontend, Chrome Inspect Element returns this error:
 ```
 Access to fetch at 'http://127.0.0.1:8000/auth/api/users/login/' from origin 'http://localhost:8080' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
 ```
-**RESOLUTION**:
+**RESOLUTION**: 
+1. `pip install django-cors-header`
+2. `pip freeze > requirements.txt`
+3. settings.py: add `'corsheaders.middleware.CorsMiddleware',` to Middleware
+4. Add the following after Middleware:
+```
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = ['http://localhost:8080'],
+```
 
 **ERROR**: `'links'` property of 'list' model does not show up in Postman.
 

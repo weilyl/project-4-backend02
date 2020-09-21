@@ -19,6 +19,7 @@ from apps.api.serializer import LinkSerializer, ListSerializer, TagSerializer, R
 # Get all lists, create lists, delete lists; how to use perform_destroy to ask before deleting?
 # Only specific user can do this
 class ListViewSet(viewsets.ModelViewSet):
+    pagination_class = None
     permission_classes = (IsAuthenticated,)
     serializer_class = ListSerializer
 
@@ -157,6 +158,7 @@ class RemoveLinkFromListView(View):
 
 
 class AddLinkToListView(viewsets.ModelViewSet):
+    pagination_class = None
     permission_classes = (IsAuthenticated,)
     serializer_class = ListLinksSerializer
 
@@ -211,6 +213,7 @@ class AddLinkToListView(viewsets.ModelViewSet):
 # Get all links saved by a specific user
 # should I change 'is_saved' property for a link when it's created and/or added to a list?
 class LinksViewSet(viewsets.ModelViewSet):
+    pagination_class = None
     permission_classes = (IsAuthenticated,)
     serializer_class = LinkSerializer
 
