@@ -4,7 +4,7 @@
 
 Link to completed project [here](https://goodhooks.herokuapp.com/)
 
-Link to project frontend [here]()
+Link to project frontend [here](https://github.com/weilyl/project-4-frontend02)
 
 Link to project backend [here](https://github.com/weilyl/project-4-backend02)
 
